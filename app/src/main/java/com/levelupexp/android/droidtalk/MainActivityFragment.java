@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -75,7 +76,7 @@ public class MainActivityFragment extends Fragment {
 
             @Override
             public void onFailure(Call<List<Message>> call, Throwable t) {
-                int i = 1;
+                Toast.makeText(getContext(), "Unable to retrieve messages", Toast.LENGTH_LONG).show();
             }
         });
 
