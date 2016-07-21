@@ -42,6 +42,7 @@ public class MainActivityFragment extends Fragment {
     private Unbinder unbinder;
     private List<String> list;
     private ArrayAdapter arrayAdapter;
+    private DroidTalkAPI droidTalkAPI;
 
     public MainActivityFragment() {
     }
@@ -61,7 +62,13 @@ public class MainActivityFragment extends Fragment {
                 .baseUrl("http://wwc-chatroom-staging.herokuapp.com/")
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
-        DroidTalkAPI droidTalkAPI = retrofit.create(DroidTalkAPI.class);
+        droidTalkAPI = retrofit.create(DroidTalkAPI.class);
+        getMessages();
+
+        return rootView;
+    }
+
+    private void getMessages() {
         Call<List<Message>> messages = droidTalkAPI.getMessages();
         messages.enqueue(new Callback<List<Message>>() {
 
@@ -79,14 +86,24 @@ public class MainActivityFragment extends Fragment {
                 Toast.makeText(getContext(), "Unable to retrieve messages", Toast.LENGTH_LONG).show();
             }
         });
-
-        return rootView;
     }
 
     @OnClick(R.id.message_button)
     public void submit() {
         String inputText = messageInputBox.getText().toString();
-        list.add(inputText);
+        Call<Message> message = droidTalkAPI.sendMessage(new Message(inputText));
+        message.enqueue(new Callback<Message>() {
+            @Override
+            public void onResponse(Call<Message> call, Response<Message> response) {
+                list.clear();
+                getMessages();
+            }
+
+            @Override
+            public void onFailure(Call<Message> call, Throwable t) {
+                Toast.makeText(getContext(), "Unable to send message", Toast.LENGTH_LONG).show();
+            }
+        });
         messageInputBox.setText("");
         arrayAdapter.notifyDataSetChanged();
     }
