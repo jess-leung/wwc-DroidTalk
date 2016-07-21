@@ -10,6 +10,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +20,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class MainActivityFragment extends Fragment {
@@ -44,10 +52,33 @@ public class MainActivityFragment extends Fragment {
         unbinder = ButterKnife.bind(this, rootView);
 
         list = new ArrayList<>();
-        list.add("This is the first message");
-        list.add("This is the second message");
         arrayAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, list);
         messageListView.setAdapter(arrayAdapter);
+
+        Gson gson = new GsonBuilder().create();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://wwc-chatroom-staging.herokuapp.com/")
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+        DroidTalkAPI droidTalkAPI = retrofit.create(DroidTalkAPI.class);
+        Call<List<Message>> messages = droidTalkAPI.getMessages();
+        messages.enqueue(new Callback<List<Message>>() {
+
+            @Override
+            public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
+                List<Message> messages = response.body();
+                for (Message message : messages) {
+                    list.add(message.content);
+                }
+                arrayAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onFailure(Call<List<Message>> call, Throwable t) {
+                int i = 1;
+            }
+        });
+
         return rootView;
     }
 
@@ -57,7 +88,6 @@ public class MainActivityFragment extends Fragment {
         list.add(inputText);
         messageInputBox.setText("");
         arrayAdapter.notifyDataSetChanged();
-
     }
 
     @Override public void onDestroyView() {
