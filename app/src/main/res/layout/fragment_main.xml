@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,26 +8,35 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.levelupexp.android.droidtalk.MainActivityFragment"
     tools:showIn="@layout/activity_main"
-    android:orientation="vertical"
-    android:weightSum="100">
+    android:orientation="vertical">
 
-    <ListView
-        android:id="@+id/message_list_view"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="60"></ListView>
+        android:weightSum="100">
+        <ListView
+            android:id="@+id/message_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:weightSum="70"></ListView>
+    </LinearLayout>
 
-    <EditText
-        android:id="@+id/message_input"
+    <LinearLayout
+        android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
-        android:layout_height="42dp"
-        android:layout_weight="20" />
+        android:layout_height="wrap_content"
+        android:layout_weight="40"
+        android:orientation="vertical">
+        <EditText
+            android:id="@+id/message_input"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
 
-    <Button
-        android:id="@+id/message_button"
-        android:layout_width="match_parent"
-        android:layout_height="42dp"
-        android:layout_weight="20"
-        android:text="SEND"/>
+        <Button
+            android:id="@+id/message_button"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="SEND"/>
+    </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>
