@@ -1,5 +1,10 @@
 package com.levelupexp.android.droidtalk;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -30,6 +35,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivityFragment extends Fragment {
 
+    private static final String BASE_URL = "http://wwc-chatroom-staging.herokuapp.com/";
+    private static final String MESSAGE_RETRIEVAL_ERROR_MESSAGE = "Unable to retrieve messages";
+    private static final String MESSAGE_SEND_ERROR_MESSAGE = "Unable to send message";
     @BindView(R.id.message_list_view)
     ListView messageListView;
 
@@ -53,19 +61,26 @@ public class MainActivityFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         unbinder = ButterKnife.bind(this, rootView);
 
-        list = new ArrayList<>();
-        arrayAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, list);
-        messageListView.setAdapter(arrayAdapter);
+        setUpListView();
+        setUpMessages();
 
+        return rootView;
+    }
+
+    private void setUpMessages() {
         Gson gson = new GsonBuilder().create();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://wwc-chatroom-staging.herokuapp.com/")
+                .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
         droidTalkAPI = retrofit.create(DroidTalkAPI.class);
         getMessages();
+    }
 
-        return rootView;
+    private void setUpListView() {
+        list = new ArrayList<>();
+        arrayAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, list);
+        messageListView.setAdapter(arrayAdapter);
     }
 
     private void getMessages() {
@@ -75,6 +90,7 @@ public class MainActivityFragment extends Fragment {
             @Override
             public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
                 List<Message> messages = response.body();
+                list.clear();
                 for (Message message : messages) {
                     list.add(message.content);
                 }
@@ -83,7 +99,7 @@ public class MainActivityFragment extends Fragment {
 
             @Override
             public void onFailure(Call<List<Message>> call, Throwable t) {
-                Toast.makeText(getContext(), "Unable to retrieve messages", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), MESSAGE_RETRIEVAL_ERROR_MESSAGE, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -95,13 +111,12 @@ public class MainActivityFragment extends Fragment {
         message.enqueue(new Callback<Message>() {
             @Override
             public void onResponse(Call<Message> call, Response<Message> response) {
-                list.clear();
                 getMessages();
             }
 
             @Override
             public void onFailure(Call<Message> call, Throwable t) {
-                Toast.makeText(getContext(), "Unable to send message", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), MESSAGE_SEND_ERROR_MESSAGE, Toast.LENGTH_LONG).show();
             }
         });
         messageInputBox.setText("");
@@ -112,4 +127,5 @@ public class MainActivityFragment extends Fragment {
         super.onDestroyView();
         unbinder.unbind();
     }
+
 }
